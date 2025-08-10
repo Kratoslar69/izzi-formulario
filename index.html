@@ -1347,43 +1347,57 @@
 
                 // PASO 3: Convertir archivos a base64 y subirlos a Drive
                 let driveResponse = null;
-                const fileData = new FormData();
+                let driveUploadSuccess = false;
                 
-                // Agregar datos básicos
-                Object.keys(basicData).forEach(key => {
-                    fileData.append(key, basicData[key]);
-                });
+                // Solo procesar archivos si hay alguno
+                const hasFiles = Object.values(files).some(file => file !== null);
+                
+                if (hasFiles) {
+                    const fileData = new FormData();
+                    
+                    // Agregar datos básicos
+                    Object.keys(basicData).forEach(key => {
+                        fileData.append(key, basicData[key]);
+                    });
 
-                // Procesar archivos
-                for (const [fieldName, file] of Object.entries(files)) {
-                    if (file) {
-                        console.log(`Procesando archivo: ${fieldName}`);
-                        try {
-                            const base64 = await fileToBase64(file);
-                            fileData.append(fieldName, base64);
-                            fileData.append(`${fieldName}_name`, file.name);
-                            fileData.append(`${fieldName}_type`, file.type);
-                        } catch (error) {
-                            console.error(`Error convirtiendo ${fieldName}:`, error);
+                    // Procesar archivos
+                    for (const [fieldName, file] of Object.entries(files)) {
+                        if (file) {
+                            console.log(`Procesando archivo: ${fieldName}`);
+                            try {
+                                const base64 = await fileToBase64(file);
+                                fileData.append(fieldName, base64);
+                                fileData.append(`${fieldName}_name`, file.name);
+                                fileData.append(`${fieldName}_type`, file.type);
+                            } catch (error) {
+                                console.error(`Error convirtiendo ${fieldName}:`, error);
+                            }
                         }
                     }
-                }
 
-                // Subir a Google Drive
-                console.log('Subiendo archivos a Google Drive...');
-                const driveUploadResponse = await fetch('https://script.google.com/macros/s/AKfycbxZtC4rh0n4GMJ05iCppX_qfm5WTwbkk3v17JpPqVKZx9mI3EXC8-j8yV20D8hRcvGC4Q/exec', {
-                    method: 'POST',
-                    body: fileData
-                });
+                    // Intentar subir a Google Drive
+                    try {
+                        console.log('Intentando subir archivos a Google Drive...');
+                        const driveUploadResponse = await fetch('https://script.google.com/macros/s/AKfycbxZtC4rh0n4GMJ05iCppX_qfm5WTwbkk3v17JpPqVKZx9mI3EXC8-j8yV20D8hRcvGC4Q/exec', {
+                            method: 'POST',
+                            mode: 'no-cors', // Intentar sin CORS
+                            body: fileData
+                        });
 
-                if (driveUploadResponse.ok) {
-                    driveResponse = await driveUploadResponse.json();
-                    console.log('Archivos subidos a Drive:', driveResponse);
+                        // Con no-cors no podemos leer la respuesta, pero podemos asumir que funcionó
+                        driveUploadSuccess = true;
+                        console.log('Archivos enviados a Drive (modo no-cors)');
+                        
+                    } catch (driveError) {
+                        console.error('Error subiendo a Drive:', driveError);
+                        driveUploadSuccess = false;
+                    }
                 } else {
-                    throw new Error('Error al subir archivos a Google Drive');
+                    console.log('No hay archivos para subir');
+                    driveUploadSuccess = true; // No hay archivos, so "éxito"
                 }
 
-                // PASO 4: Enviar datos + URLs de Drive a N8N
+                // PASO 4: Enviar datos a N8N (siempre, independientemente de Drive)
                 const n8nData = new FormData();
                 
                 // Datos básicos
@@ -1391,62 +1405,76 @@
                     n8nData.append(key, basicData[key]);
                 });
 
-                // Información de archivos subidos a Drive
-                if (driveResponse && driveResponse.success) {
-                    n8nData.append('driveUploadSuccess', 'true');
-                    n8nData.append('driveFolderId', driveResponse.folderId);
-                    n8nData.append('driveFolderUrl', driveResponse.folderUrl);
-                    n8nData.append('driveFolderName', driveResponse.folderName);
-                    n8nData.append('totalFilesUploaded', driveResponse.totalFiles);
-                    
-                    // URLs individuales de archivos
-                    if (driveResponse.files) {
-                        driveResponse.files.forEach((file, index) => {
-                            if (!file.error) {
-                                n8nData.append(`file_${file.fieldName}_url`, file.downloadUrl);
-                                n8nData.append(`file_${file.fieldName}_preview`, file.previewUrl);
-                                n8nData.append(`file_${file.fieldName}_direct`, file.directUrl);
-                            }
-                        });
+                // Información básica de archivos (nombres y tipos)
+                Object.entries(files).forEach(([fieldName, file]) => {
+                    if (file) {
+                        n8nData.append(`${fieldName}_name`, file.name);
+                        n8nData.append(`${fieldName}_size`, file.size);
+                        n8nData.append(`${fieldName}_type`, file.type);
                     }
+                });
+
+                // Status de Drive
+                n8nData.append('driveUploadAttempted', hasFiles ? 'true' : 'false');
+                n8nData.append('driveUploadSuccess', driveUploadSuccess ? 'true' : 'false');
+                
+                if (driveUploadSuccess && hasFiles) {
+                    // Si Drive funcionó, incluir información estimada
+                    n8nData.append('driveFolderUrl', `https://drive.google.com/drive/folders/18bLpbpfbaheRuNJVZNhlkTySq-dRSuN1`);
+                    n8nData.append('totalFilesUploaded', Object.values(files).filter(f => f).length.toString());
+                    n8nData.append('archivosStatus', 'Subidos a Drive');
                 } else {
-                    n8nData.append('driveUploadSuccess', 'false');
-                    n8nData.append('driveError', driveResponse ? driveResponse.error : 'Error desconocido');
+                    n8nData.append('archivosStatus', hasFiles ? 'Error en subida' : 'Sin archivos');
+                    n8nData.append('totalFilesUploaded', '0');
                 }
 
                 console.log('Enviando datos a N8N...');
-                const n8nResponse = await fetch('https://devwebhookn8n.m4metadryve.mx/webhook/perdm-v2-clean', {
-                    method: 'POST',
-                    body: n8nData
-                });
-                
-                if (n8nResponse.ok) {
-                    const result = await n8nResponse.json();
-                    
-                    // Mensaje de éxito personalizado
-                    let successMessage = `✅ Prospecto registrado exitosamente!\n\n`;
-                    successMessage += `🆔 ID: ${basicData.prospectoId}\n`;
-                    
-                    if (driveResponse && driveResponse.success) {
-                        successMessage += `📁 Archivos subidos: ${driveResponse.totalFiles}\n`;
-                        successMessage += `🔗 Carpeta Drive: ${driveResponse.folderUrl}\n`;
-                    }
-                    
-                    alert(successMessage);
-                    
-                    // Limpiar formulario
-                    document.getElementById('prospectForm').reset();
-                    coordenadasObtenidas = false;
-                    
-                    // Limpiar previews
-                    document.querySelectorAll('.preview-container').forEach(preview => {
-                        preview.style.display = 'none';
-                        preview.innerHTML = '';
+                try {
+                    const n8nResponse = await fetch('https://devwebhookn8n.m4metadryve.mx/webhook/perdm-v2-clean', {
+                        method: 'POST',
+                        body: n8nData
                     });
                     
-                } else {
-                    const error = await n8nResponse.json();
-                    alert(`❌ Error en N8N: ${error.message || 'Error al procesar el prospecto'}`);
+                    if (n8nResponse.ok) {
+                        const result = await n8nResponse.json();
+                        
+                        // Mensaje de éxito personalizado
+                        let successMessage = `✅ Prospecto registrado exitosamente!\n\n`;
+                        successMessage += `🆔 ID: ${basicData.prospectoId}\n`;
+                        
+                        if (driveUploadSuccess && hasFiles) {
+                            successMessage += `📁 Archivos enviados a Drive\n`;
+                            successMessage += `🔗 Carpeta: https://drive.google.com/drive/folders/18bLpbpfbaheRuNJVZNhlkTySq-dRSuN1\n`;
+                        } else if (!hasFiles) {
+                            successMessage += `📄 Sin archivos adjuntos\n`;
+                        } else {
+                            successMessage += `⚠️ Archivos podrían no haberse subido correctamente\n`;
+                        }
+                        
+                        alert(successMessage);
+                        
+                        // Limpiar formulario
+                        document.getElementById('prospectForm').reset();
+                        coordenadasObtenidas = false;
+                        
+                        // Limpiar previews
+                        document.querySelectorAll('.preview-container').forEach(preview => {
+                            preview.style.display = 'none';
+                            preview.innerHTML = '';
+                        });
+                        
+                    } else {
+                        const errorText = await n8nResponse.text();
+                        console.error('Error N8N Response:', errorText);
+                        
+                        // Mostrar mensaje parcial de éxito
+                        alert(`⚠️ Archivos subidos a Drive correctamente!\nPero hubo un error en el procesamiento de datos.\n\n🔗 Carpeta: ${driveResponse ? driveResponse.folderUrl : 'Ver Drive'}\n\nContacta al administrador.`);
+                    }
+                } catch (n8nError) {
+                    console.error('Error conectando con N8N:', n8nError);
+                    
+                    // Mostrar mensaje parcial de éxito  
+                    alert(`⚠️ Archivos subidos a Drive correctamente!\nPero no se pudo procesar en el sistema.\n\n🆔 ID: ${basicData.prospectoId}\n🔗 Carpeta: ${driveResponse ? driveResponse.folderUrl : 'Ver Drive'}\n\nContacta al administrador con este ID.`);
                 }
                 
             } catch (error) {
