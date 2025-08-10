@@ -1294,9 +1294,19 @@
             });
         }
 
+        // Variable global para evitar envíos múltiples
+        let isSubmitting = false;
+
         async function handleSubmit(e) {
             e.preventDefault();
             
+            // Prevenir múltiples envíos
+            if (isSubmitting) {
+                console.log('Envío ya en progreso, ignorando...');
+                return;
+            }
+            
+            isSubmitting = true;
             const submitBtn = document.getElementById('btnSubmit');
             const loading = document.getElementById('loading');
             
@@ -1481,6 +1491,7 @@
                 console.error('Error:', error);
                 alert(`❌ Error: ${error.message}`);
             } finally {
+                isSubmitting = false;
                 submitBtn.disabled = false;
                 loading.style.display = 'none';
             }
