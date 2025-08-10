@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Prospectos - IZZI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2B2B28, #3a3a37);
+            color: white;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(43, 43, 40, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #00C1B5;
+        }
+
+        .logo {
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            max-height: 120px;
+            width: auto;
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: #939598;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: #00C1B5;
+            font-weight: bold;
+            text-transform: lowercase;
+            letter-spacing: 1px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border-left: 5px solid #00C1B5;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #00C1B5;
+            text-transform: lowercase;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: #00C1B5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #2B2B28;
+            font-weight: bold;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #FFA807;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #3a3a37;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #00C1B5;
+            background: rgba(0, 193, 181, 0.1);
+            box-shadow: 0 0 10px rgba(0, 193, 181, 0.3);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #939598;
+        }
+
+        select option {
+            background: #2B2B28;
+            color: white;
+        }
+
+        .file-input-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            border: 2px dashed #3a3a37;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .file-label:hover {
+            border-color: #00C1B5;
+            background: rgba(0, 193, 181, 0.1);
+        }
+
+        .file-icon {
+            width: 20px;
+            height: 20px;
+            background: #00C1B5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2B2B28;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .coordinates-container {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .coordinates-input {
+            flex: 1;
+        }
+
+        .btn-geocode {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #FFA807, #FCD116);
+            color: #2B2B28;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-geocode:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 168, 7, 0.4);
+        }
+
+        .error-message {
+            color: #D60270;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: #00C1B5;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .submit-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #3a3a37;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #00C1B5, #D60270);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: lowercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 193, 181, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #3a3a37;
+            border-top: 3px solid #00C1B5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .preview-container {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 193, 181, 0.1);
+            border-radius: 5px;
+            border: 1px solid #00C1B5;
+        }
+
+        .preview-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #00C1B5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo-text {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="perdm_izzi_logo_final.png" alt="PERDM IZZI Logo" style="max-height: 120px; width: auto;">
+            </div>
+            <div class="tagline">LLÉVATELA FÁCIL, LLÉVATELA IZZI</div>
+            <div class="subtitle">REGISTRO DE PROSPECTOS</div>
+        </div>
+
+        <form id="prospectForm">
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">1</div>
+                    DATOS PERSONALES
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>APELLIDO PATERNO <span class="required">*</span></label>
+                        <input type="text" id="apellidoPaterno" name="apellidoPaterno" required>
+                        <div class="error-message" id="error-apellidoPaterno"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>APELLIDO MATERNO <span class="required">*</span></label>
+                        <input type="text" id="apellidoMaterno" name="apellidoMaterno" required>
+                        <div class="error-message" id="error-apellidoMaterno"></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>NOMBRE(S) <span class="required">*</span></label>
+                        <input type="text" id="nombres" name="nombres" required>
+                        <div class="error-message" id="error-nombres"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>RFC <span class="required">*</span></label>
+                        <input type="text" id="rfc" name="rfc" placeholder="10 a 13 dígitos" maxlength="13" required>
+                        <div class="error-message" id="error-rfc"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>CURP <span class="required">*</span></label>
+                        <input type="text" id="curp" name="curp" placeholder="18 dígitos" maxlength="18" required>
+                        <div class="error-message" id="error-curp"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">2</div>
+                    DIRECCIÓN
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>CALLE/AVENIDA/BLVD <span class="required">*</span></label>
+                        <input type="text" id="calle" name="calle" required>
+                        <div class="error-message" id="error-calle"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>NÚMERO EXTERIOR <span class="required">*</span></label>
+                        <input type="text" id="numeroExterior" name="numeroExterior" required>
+                        <div class="error-message" id="error-numeroExterior"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>NÚMERO INTERIOR</label>
+                        <input type="text" id="numeroInterior" name="numeroInterior" placeholder="Opcional">
+                        <div class="error-message" id="error-numeroInterior"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>CÓDIGO POSTAL <span class="required">*</span></label>
+                        <input type="text" id="codigoPostal" name="codigoPostal" placeholder="5 dígitos" maxlength="5" required>
+                        <div class="error-message" id="error-codigoPostal"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>ESTADO <span class="required">*</span></label>
+                        <select id="estado" name="estado" required>
+                            <option value="">Seleccionar estado</option>
+                        </select>
+                        <div class="error-message" id="error-estado"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>MUNICIPIO/ALCALDÍA <span class="required">*</span></label>
+                        <select id="municipio" name="municipio" required>
+                            <option value="">Primero selecciona CP</option>
+                        </select>
+                        <div class="error-message" id="error-municipio"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>COLONIA <span class="required">*</span></label>
+                        <select id="colonia" name="colonia" required>
+                            <option value="">Primero selecciona CP</option>
+                        </select>
+                        <div class="error-message" id="error-colonia"></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>COORDENADAS (LAT, LNG)</label>
+                        <div class="coordinates-container">
+                            <input type="text" id="coordenadas" name="coordenadas" class="coordinates-input" placeholder="Se autocompletará..." readonly>
+                            <button type="button" class="btn-geocode" id="btnGeocode">📍 OBTENER COORDENADAS</button>
+                        </div>
+                        <div class="success-message" id="success-coordenadas"></div>
+                        <div class="error-message" id="error-coordenadas"></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>DATOS ADICIONALES DE DIRECCIÓN</label>
+                        <textarea 
+                            id="datosAdicionales" 
+                            name="datosAdicionales" 
+                            rows="3" 
+                            placeholder="Usa este campo para agregar cualquier información de dirección que no aparezca automáticamente: calles no encontradas, colonias nuevas, referencias específicas, códigos postales no registrados, etc.">
+                        </textarea>
+                        <div style="font-size: 12px; color: #939598; margin-top: 5px;">
+                            📝 Campo opcional para datos que no se encuentren en la base de datos automática
+                        </div>
+                        <div class="error-message" id="error-datosAdicionales"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">3</div>
+                    CONTACTO
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>CELULAR 1 <span class="required">*</span></label>
+                        <input type="tel" id="celular1" name="celular1" placeholder="10 dígitos" maxlength="10" required>
+                        <div class="error-message" id="error-celular1"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>CELULAR 2 <span class="required">*</span></label>
+                        <input type="tel" id="celular2" name="celular2" placeholder="10 dígitos (diferente)" maxlength="10" required>
+                        <div class="error-message" id="error-celular2"></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>CORREO ELECTRÓNICO <span class="required">*</span></label>
+                        <input type="email" id="correo" name="correo" placeholder="ejemplo@correo.com" required>
+                        <div class="error-message" id="error-correo"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">4</div>
+                    SERVICIOS SOLICITADOS
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>PAQUETE SOLICITADO <span class="required">*</span></label>
+                        <select id="paquete" name="paquete" required>
+                            <option value="">Seleccionar paquete</option>
+                            <option value="residencial">Residencial</option>
+                            <option value="2play">2Play</option>
+                            <option value="3play">3Play</option>
+                            <option value="izzi_movil">Izzi Móvil</option>
+                        </select>
+                        <div class="error-message" id="error-paquete"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>SUBPAQUETE <span class="required">*</span></label>
+                        <select id="subpaquete" name="subpaquete" required>
+                            <option value="">Primero selecciona paquete</option>
+                        </select>
+                        <div class="error-message" id="error-subpaquete"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">5</div>
+                    DOCUMENTOS REQUERIDOS
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>ID FRONTAL <span class="required">*</span></label>
+                        <div class="file-input-container">
+                            <input type="file" id="ineFrontal" name="ineFrontal" class="file-input" accept="image/*,application/pdf" required>
+                            <label for="ineFrontal" class="file-label">
+                                <div class="file-icon">📄</div>
+                                <span>Seleccionar archivo</span>
+                            </label>
+                        </div>
+                        <div class="preview-container" id="preview-ineFrontal"></div>
+                        <div class="error-message" id="error-ineFrontal"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>ID REVERSO <span class="required">*</span></label>
+                        <div class="file-input-container">
+                            <input type="file" id="ineReverso" name="ineReverso" class="file-input" accept="image/*,application/pdf" required>
+                            <label for="ineReverso" class="file-label">
+                                <div class="file-icon">📄</div>
+                                <span>Seleccionar archivo</span>
+                            </label>
+                        </div>
+                        <div class="preview-container" id="preview-ineReverso"></div>
+                        <div class="error-message" id="error-ineReverso"></div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>COMPROBANTE DE DOMICILIO <span class="required">*</span></label>
+                        <div class="file-input-container">
+                            <input type="file" id="comprobanteDomicilio" name="comprobanteDomicilio" class="file-input" accept="image/*,application/pdf" required>
+                            <label for="comprobanteDomicilio" class="file-label">
+                                <div class="file-icon">🏠</div>
+                                <span>Seleccionar archivo (CFE, Telmex, Agua, Gas - últimos 3 meses)</span>
+                            </label>
+                        </div>
+                        <div class="preview-container" id="preview-comprobanteDomicilio"></div>
+                        <div class="error-message" id="error-comprobanteDomicilio"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>SCREENSHOT 1</label>
+                        <div class="file-input-container">
+                            <input type="file" id="screenshot1" name="screenshot1" class="file-input" accept="image/*">
+                            <label for="screenshot1" class="file-label">
+                                <div class="file-icon">💬</div>
+                                <span>Seleccionar captura 1</span>
+                            </label>
+                        </div>
+                        <div class="preview-container" id="preview-screenshot1"></div>
+                        <div class="error-message" id="error-screenshot1"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>SCREENSHOT 2</label>
+                        <div class="file-input-container">
+                            <input type="file" id="screenshot2" name="screenshot2" class="file-input" accept="image/*">
+                            <label for="screenshot2" class="file-label">
+                                <div class="file-icon">💬</div>
+                                <span>Seleccionar captura 2</span>
+                            </label>
+                        </div>
+                        <div class="preview-container" id="preview-screenshot2"></div>
+                        <div class="error-message" id="error-screenshot2"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>SCREENSHOT 3</label>
+                        <div class="file-input-container">
+                            <input type="file" id="screenshot3" name="screenshot3" class="file-input" accept="image/*">
+                            <label for="screenshot3" class="file-label">
+                                <div class="file-icon">💬</div>
+                                <span>Seleccionar captura 3</span>
+                            </label>
+                        </div>
+                        <div class="preview-container" id="preview-screenshot3"></div>
+                        <div class="error-message" id="error-screenshot3"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>SCREENSHOT 4</label>
+                        <div class="file-input-container">
+                            <input type="file" id="screenshot4" name="screenshot4" class="file-input" accept="image/*">
+                            <label for="screenshot4" class="file-label">
+                                <div class="file-icon">💬</div>
+                                <span>Seleccionar captura 4</span>
+                            </label>
+                        </div>
+                        <div class="preview-container" id="preview-screenshot4"></div>
+                        <div class="error-message" id="error-screenshot4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <div class="section-icon">6</div>
+                    INFORMACIÓN DEL VENDEDOR
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>NOMBRE DEL VENDEDOR <span class="required">*</span></label>
+                        <input type="text" id="nombreVendedor" name="nombreVendedor" required>
+                        <div class="error-message" id="error-nombreVendedor"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>CLAVE DE VALIDACIÓN <span class="required">*</span></label>
+                        <input type="password" id="claveValidacion" name="claveValidacion" required>
+                        <div class="error-message" id="error-claveValidacion"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="submit-section">
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    ENVIAR PROSPECTO
+                </button>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <div>procesando información...</div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Configuración de subpaquetes con datos completos
+        const subpaquetes = {
+            'residencial': [
+                {
+                    id: 'internet_60',
+                    nombre: 'Internet 60 Megas',
+                    precio: 369,
+                    precioRegular: 510,
+                    beneficios: ['Internet 60 Mbps', 'Navegación básica']
+                },
+                {
+                    id: 'internet_80_plus',
+                    nombre: 'Internet 80 Megas + VIX Premium + Skeelo',
+                    precio: 369,
+                    precioRegular: 510,
+                    beneficios: ['Internet 80 Mbps', 'VIX Premium incluido', 'Skeelo incluido', 'Navegación avanzada']
+                },
+                {
+                    id: 'internet_100_plus',
+                    nombre: 'Internet 100 Megas + VIX Premium + Skeelo',
+                    precio: 419,
+                    precioRegular: 580,
+                    beneficios: ['Internet 100 Mbps', 'VIX Premium incluido', 'Skeelo incluido', 'Navegación premium']
+                },
+                {
+                    id: 'internet_150_plus',
+                    nombre: 'Internet 150 Megas + VIX Premium + Skeelo',
+                    precio: 469,
+                    precioRegular: 650,
+                    beneficios: ['Internet 150 Mbps', 'VIX Premium incluido', 'Skeelo incluido', 'Navegación ultra rápida']
+                },
+                {
+                    id: 'internet_200_plus',
+                    nombre: 'Internet 200 Megas + VIX Premium + Skeelo',
+                    precio: 519,
+                    precioRegular: 720,
+                    beneficios: ['Internet 200 Mbps', 'VIX Premium incluido', 'Skeelo incluido', 'Navegación súper rápida']
+                },
+                {
+                    id: 'internet_500_plus',
+                    nombre: 'Internet 500 Megas + VIX Premium + Skeelo',
+                    precio: 669,
+                    precioRegular: 920,
+                    beneficios: ['Internet 500 Mbps', 'VIX Premium incluido', 'Skeelo incluido', 'Navegación extrema']
+                },
+                {
+                    id: 'internet_1000_plus',
+                    nombre: 'Internet 1000 Megas + VIX Premium + Skeelo',
+                    precio: 869,
+                    precioRegular: 1200,
+                    beneficios: ['Internet 1000 Mbps (1 Giga)', 'VIX Premium incluido', 'Skeelo incluido', 'Navegación máxima velocidad']
+                }
+            ],
+            '2play': [
+                {
+                    id: '2play_80',
+                    nombre: '2Play 80 Megas + TV',
+                    precio: 569,
+                    precioRegular: 780,
+                    beneficios: ['Internet 80 Mbps', 'TV Digital', 'Canales HD', 'VIX Premium']
+                },
+                {
+                    id: '2play_100',
+                    nombre: '2Play 100 Megas + TV',
+                    precio: 619,
+                    precioRegular: 850,
+                    beneficios: ['Internet 100 Mbps', 'TV Digital', 'Canales HD', 'VIX Premium', 'Más canales']
+                },
+                {
+                    id: '2play_150',
+                    nombre: '2Play 150 Megas + TV',
+                    precio: 669,
+                    precioRegular: 920,
+                    beneficios: ['Internet 150 Mbps', 'TV Digital', 'Canales HD', 'VIX Premium', 'Canales premium']
+                },
+                {
+                    id: '2play_200',
+                    nombre: '2Play 200 Megas + TV',
+                    precio: 719,
+                    precioRegular: 990,
+                    beneficios: ['Internet 200 Mbps', 'TV Digital', 'Canales HD', 'VIX Premium', 'Paquete completo']
+                }
+            ],
+            '3play': [
+                {
+                    id: '3play_80',
+                    nombre: '3Play 80 Megas + TV + Teléfono',
+                    precio: 619,
+                    precioRegular: 850,
+                    beneficios: ['Internet 80 Mbps', 'TV Digital', 'Teléfono fijo', 'Llamadas ilimitadas nacionales']
+                },
+                {
+                    id: '3play_100',
+                    nombre: '3Play 100 Megas + TV + Teléfono',
+                    precio: 669,
+                    precioRegular: 920,
+                    beneficios: ['Internet 100 Mbps', 'TV Digital', 'Teléfono fijo', 'Llamadas ilimitadas', 'VIX Premium']
+                },
+                {
+                    id: '3play_150',
+                    nombre: '3Play 150 Megas + TV + Teléfono',
+                    precio: 719,
+                    precioRegular: 990,
+                    beneficios: ['Internet 150 Mbps', 'TV Digital', 'Teléfono fijo', 'Llamadas ilimitadas', 'Canales premium']
+                },
+                {
+                    id: '3play_200',
+                    nombre: '3Play 200 Megas + TV + Teléfono',
+                    precio: 769,
+                    precioRegular: 1060,
+                    beneficios: ['Internet 200 Mbps', 'TV Digital', 'Teléfono fijo', 'Llamadas ilimitadas', 'Paquete completo']
+                }
+            ],
+            'izzi_movil': [
+                {
+                    id: 'movil_3gb',
+                    nombre: 'Plan Móvil 3GB',
+                    precio: 199,
+                    precioRegular: 299,
+                    beneficios: ['3GB de datos', 'Llamadas ilimitadas', 'SMS ilimitados', 'Redes sociales sin límite']
+                },
+                {
+                    id: 'movil_5gb',
+                    nombre: 'Plan Móvil 5GB',
+                    precio: 299,
+                    precioRegular: 399,
+                    beneficios: ['5GB de datos', 'Llamadas ilimitadas', 'SMS ilimitados', 'Redes sociales sin límite', 'WhatsApp ilimitado']
+                },
+                {
+                    id: 'movil_10gb',
+                    nombre: 'Plan Móvil 10GB',
+                    precio: 399,
+                    precioRegular: 549,
+                    beneficios: ['10GB de datos', 'Llamadas ilimitadas', 'SMS ilimitados', 'Redes sociales sin límite', 'Streaming incluido']
+                }
+            ]
+        };
+
+        // Variables globales
+        let coordenadasObtenidas = false;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+            setupEventListeners();
+        });
+
+        function initializeForm() {
+            // Configurar paquetes y subpaquetes
+            setupPackages();
+            
+            // Configurar validaciones en tiempo real
+            setupValidations();
+            
+            // Configurar file inputs
+            setupFileInputs();
+        }
+
+        function setupEventListeners() {
+            // Código postal para autocompletar dirección
+            document.getElementById('codigoPostal').addEventListener('input', handleCodigoPostalChange);
+            
+            // Paquetes para subpaquetes
+            document.getElementById('paquete').addEventListener('change', handlePaqueteChange);
+            
+            // Geocodificación
+            document.getElementById('btnGeocode').addEventListener('click', obtenerCoordenadas);
+            
+            // Auto-geocodificación cuando se completa la dirección
+            ['calle', 'numeroExterior', 'colonia'].forEach(field => {
+                document.getElementById(field).addEventListener('blur', autoGeocode);
+            });
+            
+            // Validación de celulares únicos
+            document.getElementById('celular2').addEventListener('input', validateUniqueCelular);
+            
+            // Manejar selección de municipio
+            document.getElementById('municipio').addEventListener('change', function() {
+                console.log('Municipio seleccionado:', this.value);
+            });
+            
+            // Manejar selección de colonia
+            document.getElementById('colonia').addEventListener('change', function() {
+                console.log('Colonia seleccionada:', this.value);
+            });
+            
+            // Submit form
+            document.getElementById('prospectForm').addEventListener('submit', handleSubmit);
+        }
+
+        function setupPackages() {
+            const paqueteSelect = document.getElementById('paquete');
+            const subpaqueteSelect = document.getElementById('subpaquete');
+            
+            paqueteSelect.addEventListener('change', function() {
+                const selectedPaquete = this.value;
+                subpaqueteSelect.innerHTML = '<option value="">Seleccionar subpaquete</option>';
+                
+                // Limpiar resumen anterior
+                const existingResumen = document.getElementById('resumen-paquete');
+                if (existingResumen) {
+                    existingResumen.remove();
+                }
+                
+                if (selectedPaquete && subpaquetes[selectedPaquete]) {
+                    subpaquetes[selectedPaquete].forEach(subpaq => {
+                        const option = document.createElement('option');
+                        option.value = subpaq.id;
+                        option.textContent = subpaq.nombre;
+                        subpaqueteSelect.appendChild(option);
+                    });
+                    subpaqueteSelect.disabled = false;
+                } else {
+                    subpaqueteSelect.disabled = true;
+                }
+            });
+            
+            // Agregar evento para mostrar resumen de beneficios
+            subpaqueteSelect.addEventListener('change', function() {
+                const selectedPaquete = paqueteSelect.value;
+                const selectedSubpaquete = this.value;
+                
+                // Limpiar resumen anterior
+                const existingResumen = document.getElementById('resumen-paquete');
+                if (existingResumen) {
+                    existingResumen.remove();
+                }
+                
+                if (selectedPaquete && selectedSubpaquete && subpaquetes[selectedPaquete]) {
+                    const subpaqueteData = subpaquetes[selectedPaquete].find(sub => sub.id === selectedSubpaquete);
+                    if (subpaqueteData) {
+                        mostrarResumenPaquete(subpaqueteData);
+                    }
+                }
+            });
+        }
+        
+        function mostrarResumenPaquete(subpaqueteData) {
+            const serviciosSection = document.querySelector('.section:has(#paquete)');
+            
+            const resumenHTML = `
+                <div id="resumen-paquete" style="
+                    margin-top: 30px;
+                    padding: 25px;
+                    background: rgba(0, 193, 181, 0.1);
+                    border: 2px solid #00C1B5;
+                    border-radius: 15px;
+                    color: white;
+                ">
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin-bottom: 20px;
+                        font-size: 18px;
+                        font-weight: bold;
+                        color: #00C1B5;
+                    ">
+                        <span style="
+                            background: #00C1B5;
+                            color: #2B2B28;
+                            padding: 5px 10px;
+                            border-radius: 5px;
+                            font-size: 14px;
+                        ">📋</span>
+                        Resumen del Paquete Seleccionado
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <div style="
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                                margin-bottom: 15px;
+                                color: #FFA807;
+                                font-weight: bold;
+                            ">
+                                <span>💰</span>
+                                Precio
+                            </div>
+                            <div style="
+                                font-size: 32px;
+                                font-weight: bold;
+                                color: #00C1B5;
+                                margin-bottom: 10px;
+                            ">
+                                ${subpaqueteData.precio} MXN/mes
+                            </div>
+                            ${subpaqueteData.precioRegular > subpaqueteData.precio ? `
+                                <div style="
+                                    font-size: 16px;
+                                    color: #939598;
+                                    text-decoration: line-through;
+                                ">
+                                    Precio regular: ${subpaqueteData.precioRegular} MXN/mes
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div>
+                            <div style="
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                                margin-bottom: 15px;
+                                color: #FFA807;
+                                font-weight: bold;
+                            ">
+                                <span>✨</span>
+                                Beneficios Incluidos
+                            </div>
+                            <ul style="
+                                list-style: none;
+                                padding: 0;
+                                margin: 0;
+                            ">
+                                ${subpaqueteData.beneficios.map(beneficio => `
+                                    <li style="
+                                        margin-bottom: 8px;
+                                        padding-left: 20px;
+                                        position: relative;
+                                        color: white;
+                                    ">
+                                        <span style="
+                                            position: absolute;
+                                            left: 0;
+                                            color: #00C1B5;
+                                        ">•</span>
+                                        ${beneficio}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div style="
+                        margin-top: 20px;
+                        padding: 15px;
+                        background: rgba(255, 168, 7, 0.2);
+                        border-left: 4px solid #FFA807;
+                        border-radius: 5px;
+                    ">
+                        <div style="
+                            font-weight: bold;
+                            color: #FFA807;
+                            margin-bottom: 5px;
+                        ">
+                            Nota:
+                        </div>
+                        <div style="
+                            font-size: 14px;
+                            color: #FFFFFF;
+                        ">
+                            Precios sujetos a disponibilidad en tu zona. Instalación y activación pueden tener costo adicional.
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            serviciosSection.insertAdjacentHTML('beforeend', resumenHTML);
+        }
+
+        function setupValidations() {
+            // Convertir a mayúsculas automáticamente
+            const uppercaseFields = ['apellidoPaterno', 'apellidoMaterno', 'nombres', 'rfc', 'curp', 'calle', 'numeroExterior', 'numeroInterior', 'estado', 'municipio', 'colonia', 'nombreVendedor'];
+            uppercaseFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', function() {
+                        this.value = this.value.toUpperCase();
+                    });
+                }
+            });
+
+            // RFC validation
+            document.getElementById('rfc').addEventListener('input', function() {
+                const rfc = this.value.toUpperCase();
+                this.value = rfc;
+                if (rfc.length >= 10 && rfc.length <= 13) {
+                    hideError('rfc');
+                } else if (rfc.length > 0) {
+                    showError('rfc', 'RFC debe tener entre 10 y 13 caracteres');
+                }
+            });
+
+            // CURP validation
+            document.getElementById('curp').addEventListener('input', function() {
+                const curp = this.value.toUpperCase();
+                this.value = curp;
+                if (curp.length === 18) {
+                    hideError('curp');
+                } else if (curp.length > 0 && curp.length !== 18) {
+                    showError('curp', 'CURP debe tener exactamente 18 caracteres');
+                }
+            });
+
+            // CP validation
+            document.getElementById('codigoPostal').addEventListener('input', function() {
+                const cp = this.value;
+                if (cp.length === 5 && /^\d{5}$/.test(cp)) {
+                    hideError('codigoPostal');
+                } else if (cp.length > 0) {
+                    showError('codigoPostal', 'Código postal debe tener 5 dígitos');
+                }
+            });
+
+            // Celular validations
+            ['celular1', 'celular2'].forEach(field => {
+                document.getElementById(field).addEventListener('input', function() {
+                    const cel = this.value;
+                    if (cel.length === 10 && /^\d{10}$/.test(cel)) {
+                        hideError(field);
+                    } else if (cel.length > 0) {
+                        showError(field, 'Número debe tener exactamente 10 dígitos');
+                    }
+                });
+            });
+
+            // Email validation
+            document.getElementById('correo').addEventListener('input', function() {
+                const email = this.value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(email)) {
+                    hideError('correo');
+                } else if (email.length > 0) {
+                    showError('correo', 'Formato de correo inválido');
+                }
+            });
+        }
+
+        function setupFileInputs() {
+            ['ineFrontal', 'ineReverso', 'comprobanteDomicilio', 'screenshot1', 'screenshot2', 'screenshot3', 'screenshot4'].forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                const label = input.nextElementSibling;
+                
+                input.addEventListener('change', function() {
+                    const files = this.files;
+                    let labelText = 'Seleccionar archivo';
+                    
+                    if (files.length > 0) {
+                        labelText = files[0].name;
+                        hideError(fieldId);
+                        showPreview(fieldId, files);
+                    }
+                    
+                    label.querySelector('span').textContent = labelText;
+                });
+            });
+        }
+
+        function showPreview(fieldId, files) {
+            const previewContainer = document.getElementById(`preview-${fieldId}`);
+            previewContainer.innerHTML = '';
+            previewContainer.style.display = 'block';
+            
+            Array.from(files).forEach((file, index) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                previewItem.innerHTML = `
+                    <span>✅</span>
+                    <span>${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                `;
+                previewContainer.appendChild(previewItem);
+            });
+        }
+
+        async function handleCodigoPostalChange() {
+            const cp = this.value;
+            if (cp.length === 5 && /^\d{5}$/.test(cp)) {
+                try {
+                    await loadLocationData(cp);
+                } catch (error) {
+                    console.error('Error loading location data:', error);
+                    showError('codigoPostal', 'Error al cargar datos de ubicación');
+                }
+            } else {
+                clearLocationSelects();
+            }
+        }
+
+        async function loadLocationData(cp) {
+            try {
+                console.log('Consultando CP:', cp);
+                const url = `https://devsupabase.m4metadryve.mx/rest/v1/direcmx?d_codigo=eq.${cp}`;
+                console.log('URL:', url);
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0.PgdtfQRzmrAz1n7OHpgJPEHFIrQHP_Y0G1L8xllmd1M',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0.PgdtfQRzmrAz1n7OHpgJPEHFIrQHP_Y0G1L8xllmd1M'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data && data.length > 0) {
+                        const estados = [...new Set(data.map(item => item.d_estado))];
+                        const municipios = [...new Set(data.map(item => item.D_mnpio))];
+                        const colonias = [...new Set(data.map(item => item.d_asenta))];
+                        
+                        populateEstado(estados[0]);
+                        populateMunicipios(municipios);
+                        populateColonias(colonias);
+                        hideError('codigoPostal');
+                        
+                    } else {
+                        showError('codigoPostal', 'Código postal no encontrado');
+                        clearLocationSelects();
+                    }
+                } else {
+                    const errorText = await response.text();
+                    showError('codigoPostal', 'Error al consultar código postal');
+                    clearLocationSelects();
+                }
+            } catch (error) {
+                console.error('Error loading location data:', error);
+                showError('codigoPostal', 'Error de conexión');
+                clearLocationSelects();
+            }
+        }
+
+        // --- INICIO DE CÓDIGO CORREGIDO ---
+        function populateEstado(estado) {
+            const estadoSelect = document.getElementById('estado');
+            const upperEstado = estado.toUpperCase();
+            estadoSelect.innerHTML = `<option value="${upperEstado}" selected>${upperEstado}</option>`;
+            estadoSelect.value = upperEstado;
+        }
+
+        function populateMunicipios(municipios) {
+            const municipioSelect = document.getElementById('municipio');
+            municipioSelect.innerHTML = '<option value="">SELECCIONAR MUNICIPIO</option>';
+            municipios.forEach(mun => {
+                const option = document.createElement('option');
+                const upperMun = mun.toUpperCase();
+                option.value = upperMun;
+                option.textContent = upperMun;
+                municipioSelect.appendChild(option);
+            });
+            
+            if (municipios.length === 1) {
+                municipioSelect.value = municipios[0].toUpperCase();
+                municipioSelect.dispatchEvent(new Event('change'));
+            }
+        }
+
+        function populateColonias(colonias) {
+            const coloniaSelect = document.getElementById('colonia');
+            coloniaSelect.innerHTML = '<option value="">SELECCIONAR COLONIA</option>';
+            colonias.forEach(col => {
+                const option = document.createElement('option');
+                const upperCol = col.toUpperCase();
+                option.value = upperCol;
+                option.textContent = upperCol;
+                coloniaSelect.appendChild(option);
+            });
+        }
+        // --- FIN DE CÓDIGO CORREGIDO ---
+
+
+        function clearLocationSelects() {
+            document.getElementById('estado').innerHTML = '<option value="">Seleccionar estado</option>';
+            document.getElementById('municipio').innerHTML = '<option value="">Primero selecciona CP</option>';
+            document.getElementById('colonia').innerHTML = '<option value="">Primero selecciona CP</option>';
+        }
+
+        function handlePaqueteChange() {
+            // Esta función ya no es necesaria con la nueva implementación
+        }
+
+        function validateUniqueCelular() {
+            const cel1 = document.getElementById('celular1').value;
+            const cel2 = this.value;
+            
+            if (cel1 && cel2 && cel1 === cel2) {
+                showError('celular2', 'Los números de celular deben ser diferentes');
+            } else {
+                hideError('celular2');
+            }
+        }
+
+        async function obtenerCoordenadas() {
+            const calle = document.getElementById('calle').value;
+            const numero = document.getElementById('numeroExterior').value;
+            const numeroInt = document.getElementById('numeroInterior').value;
+            const colonia = document.getElementById('colonia').value;
+            const municipio = document.getElementById('municipio').value;
+            const estado = document.getElementById('estado').value;
+            const cp = document.getElementById('codigoPostal').value;
+            
+            if (!calle || !numero || !colonia || !municipio || !estado) {
+                showError('coordenadas', 'Completa todos los campos de dirección primero');
+                return;
+            }
+            
+            let direccion = `${calle} ${numero}`;
+            if (numeroInt) direccion += ` Int. ${numeroInt}`;
+            direccion += `, ${colonia}, ${municipio}, ${estado}, ${cp}, México`;
+            
+            console.log('Geocodificando dirección:', direccion);
+            
+            try {
+                const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=AIzaSyDh0bulJyBBU1ULnCLBZOfHLQjFWlLk2iI`);
+                
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta de Google Maps');
+                }
+                
+                const data = await response.json();
+                console.log('Respuesta de geocodificación:', data);
+                
+                if (data.status === 'OK' && data.results.length > 0) {
+                    const location = data.results[0].geometry.location;
+                    const lat = location.lat;
+                    const lng = location.lng;
+                    
+                    console.log('Coordenadas obtenidas:', lat, lng);
+                    
+                    document.getElementById('coordenadas').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    showSuccess('coordenadas', `Coordenadas obtenidas exitosamente: ${data.results[0].formatted_address}`);
+                    coordenadasObtenidas = true;
+                    hideError('coordenadas');
+                } else if (data.status === 'ZERO_RESULTS') {
+                    showError('coordenadas', 'No se encontraron coordenadas para esta dirección. Verifica que todos los datos sean correctos.');
+                } else if (data.status === 'OVER_QUERY_LIMIT') {
+                    showError('coordenadas', 'Límite de consultas excedido. Intenta más tarde.');
+                } else {
+                    showError('coordenadas', `Error de geocodificación: ${data.status}`);
+                }
+            } catch (error) {
+                console.error('Error de geocodificación:', error);
+                showError('coordenadas', 'Error al conectar con el servicio de mapas. Verifica tu conexión.');
+            }
+        }
+
+        async function autoGeocode() {
+            const calle = document.getElementById('calle').value;
+            const numero = document.getElementById('numeroExterior').value;
+            const colonia = document.getElementById('colonia').value;
+            const municipio = document.getElementById('municipio').value;
+            const estado = document.getElementById('estado').value;
+            
+            if (calle && numero && colonia && municipio && estado && !coordenadasObtenidas) {
+                console.log('Auto-geocodificando...');
+                setTimeout(() => {
+                    obtenerCoordenadas();
+                }, 1500); 
+            }
+        }
+
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(`error-${fieldId}`);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+        }
+
+        function hideError(fieldId) {
+            const errorElement = document.getElementById(`error-${fieldId}`);
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }
+
+        function showSuccess(fieldId, message) {
+            const successElement = document.getElementById(`success-${fieldId}`);
+            if (successElement) {
+                successElement.textContent = message;
+                successElement.style.display = 'block';
+            }
+        }
+
+        // Función para convertir archivo a base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('btnSubmit');
+            const loading = document.getElementById('loading');
+            
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            
+            try {
+                // PASO 1: Preparar datos básicos
+                const basicData = {
+                    apellidoPaterno: document.getElementById('apellidoPaterno').value,
+                    apellidoMaterno: document.getElementById('apellidoMaterno').value,
+                    nombres: document.getElementById('nombres').value,
+                    rfc: document.getElementById('rfc').value.toUpperCase(),
+                    curp: document.getElementById('curp').value.toUpperCase(),
+                    calle: document.getElementById('calle').value,
+                    numeroExterior: document.getElementById('numeroExterior').value,
+                    numeroInterior: document.getElementById('numeroInterior').value,
+                    codigoPostal: document.getElementById('codigoPostal').value,
+                    estado: document.getElementById('estado').value,
+                    municipio: document.getElementById('municipio').value,
+                    colonia: document.getElementById('colonia').value,
+                    coordenadas: document.getElementById('coordenadas').value,
+                    datosAdicionales: document.getElementById('datosAdicionales').value,
+                    celular1: document.getElementById('celular1').value,
+                    celular2: document.getElementById('celular2').value,
+                    correo: document.getElementById('correo').value,
+                    paquete: document.getElementById('paquete').value,
+                    subpaquete: document.getElementById('subpaquete').value,
+                    nombreVendedor: document.getElementById('nombreVendedor').value,
+                    claveValidacion: document.getElementById('claveValidacion').value,
+                    prospectoId: `PERDM-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`
+                };
+
+                console.log('Datos básicos preparados:', basicData.prospectoId);
+
+                // PASO 2: Preparar archivos para Google Drive
+                const files = {
+                    ineFrontal: document.getElementById('ineFrontal').files[0],
+                    ineReverso: document.getElementById('ineReverso').files[0],
+                    comprobanteDomicilio: document.getElementById('comprobanteDomicilio').files[0],
+                    screenshot1: document.getElementById('screenshot1').files[0],
+                    screenshot2: document.getElementById('screenshot2').files[0],
+                    screenshot3: document.getElementById('screenshot3').files[0],
+                    screenshot4: document.getElementById('screenshot4').files[0]
+                };
+
+                console.log('Archivos detectados:', Object.keys(files).filter(key => files[key]));
+
+                // PASO 3: Convertir archivos a base64 y subirlos a Drive
+                let driveResponse = null;
+                const fileData = new FormData();
+                
+                // Agregar datos básicos
+                Object.keys(basicData).forEach(key => {
+                    fileData.append(key, basicData[key]);
+                });
+
+                // Procesar archivos
+                for (const [fieldName, file] of Object.entries(files)) {
+                    if (file) {
+                        console.log(`Procesando archivo: ${fieldName}`);
+                        try {
+                            const base64 = await fileToBase64(file);
+                            fileData.append(fieldName, base64);
+                            fileData.append(`${fieldName}_name`, file.name);
+                            fileData.append(`${fieldName}_type`, file.type);
+                        } catch (error) {
+                            console.error(`Error convirtiendo ${fieldName}:`, error);
+                        }
+                    }
+                }
+
+                // Subir a Google Drive
+                console.log('Subiendo archivos a Google Drive...');
+                const driveUploadResponse = await fetch('https://script.google.com/macros/s/AKfycbxZtC4rh0n4GMJ05iCppX_qfm5WTwbkk3v17JpPqVKZx9mI3EXC8-j8yV20D8hRcvGC4Q/exec', {
+                    method: 'POST',
+                    body: fileData
+                });
+
+                if (driveUploadResponse.ok) {
+                    driveResponse = await driveUploadResponse.json();
+                    console.log('Archivos subidos a Drive:', driveResponse);
+                } else {
+                    throw new Error('Error al subir archivos a Google Drive');
+                }
+
+                // PASO 4: Enviar datos + URLs de Drive a N8N
+                const n8nData = new FormData();
+                
+                // Datos básicos
+                Object.keys(basicData).forEach(key => {
+                    n8nData.append(key, basicData[key]);
+                });
+
+                // Información de archivos subidos a Drive
+                if (driveResponse && driveResponse.success) {
+                    n8nData.append('driveUploadSuccess', 'true');
+                    n8nData.append('driveFolderId', driveResponse.folderId);
+                    n8nData.append('driveFolderUrl', driveResponse.folderUrl);
+                    n8nData.append('driveFolderName', driveResponse.folderName);
+                    n8nData.append('totalFilesUploaded', driveResponse.totalFiles);
+                    
+                    // URLs individuales de archivos
+                    if (driveResponse.files) {
+                        driveResponse.files.forEach((file, index) => {
+                            if (!file.error) {
+                                n8nData.append(`file_${file.fieldName}_url`, file.downloadUrl);
+                                n8nData.append(`file_${file.fieldName}_preview`, file.previewUrl);
+                                n8nData.append(`file_${file.fieldName}_direct`, file.directUrl);
+                            }
+                        });
+                    }
+                } else {
+                    n8nData.append('driveUploadSuccess', 'false');
+                    n8nData.append('driveError', driveResponse ? driveResponse.error : 'Error desconocido');
+                }
+
+                console.log('Enviando datos a N8N...');
+                const n8nResponse = await fetch('https://devwebhookn8n.m4metadryve.mx/webhook/perdm-v2-clean', {
+                    method: 'POST',
+                    body: n8nData
+                });
+                
+                if (n8nResponse.ok) {
+                    const result = await n8nResponse.json();
+                    
+                    // Mensaje de éxito personalizado
+                    let successMessage = `✅ Prospecto registrado exitosamente!\n\n`;
+                    successMessage += `🆔 ID: ${basicData.prospectoId}\n`;
+                    
+                    if (driveResponse && driveResponse.success) {
+                        successMessage += `📁 Archivos subidos: ${driveResponse.totalFiles}\n`;
+                        successMessage += `🔗 Carpeta Drive: ${driveResponse.folderUrl}\n`;
+                    }
+                    
+                    alert(successMessage);
+                    
+                    // Limpiar formulario
+                    document.getElementById('prospectForm').reset();
+                    coordenadasObtenidas = false;
+                    
+                    // Limpiar previews
+                    document.querySelectorAll('.preview-container').forEach(preview => {
+                        preview.style.display = 'none';
+                        preview.innerHTML = '';
+                    });
+                    
+                } else {
+                    const error = await n8nResponse.json();
+                    alert(`❌ Error en N8N: ${error.message || 'Error al procesar el prospecto'}`);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`❌ Error: ${error.message}`);
+            } finally {
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
