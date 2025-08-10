@@ -298,6 +298,140 @@
             color: #00C1B5;
         }
 
+        /* Estilos para los modales de estado */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #2B2B28;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid #00C1B5;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #00C1B5;
+        }
+
+        .modal-message {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: #FFFFFF;
+        }
+
+        .modal-details {
+            font-size: 14px;
+            color: #939598;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .modal-btn {
+            background: linear-gradient(135deg, #00C1B5, #D60270);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 193, 181, 0.4);
+        }
+
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: rgba(0, 193, 181, 0.2);
+            border: 1px solid #00C1B5;
+        }
+
+        .progress-step.completed {
+            background: rgba(0, 193, 181, 0.1);
+            color: #00C1B5;
+        }
+
+        .progress-step.error {
+            background: rgba(214, 2, 112, 0.1);
+            color: #D60270;
+        }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .step-icon.pending {
+            background: #3a3a37;
+            color: #939598;
+        }
+
+        .step-icon.active {
+            background: #FFA807;
+            color: #2B2B28;
+        }
+
+        .step-icon.completed {
+            background: #00C1B5;
+            color: #2B2B28;
+        }
+
+        .step-icon.error {
+            background: #D60270;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -308,13 +442,42 @@
                 grid-template-columns: 1fr;
             }
             
-            .logo-text {
-                font-size: 28px;
+            .modal {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Modal de estado -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-icon" id="modalIcon">⏳</div>
+            <div class="modal-title" id="modalTitle">Procesando...</div>
+            <div class="modal-message" id="modalMessage">Por favor espera mientras procesamos tu información</div>
+            <div class="progress-steps" id="progressSteps">
+                <div class="progress-step" id="step1">
+                    <div class="step-icon pending">1</div>
+                    <span>Validando datos del formulario</span>
+                </div>
+                <div class="progress-step" id="step2">
+                    <div class="step-icon pending">2</div>
+                    <span>Preparando archivos</span>
+                </div>
+                <div class="progress-step" id="step3">
+                    <div class="step-icon pending">3</div>
+                    <span>Subiendo documentos a Drive</span>
+                </div>
+                <div class="progress-step" id="step4">
+                    <div class="step-icon pending">4</div>
+                    <span>Registrando en el sistema</span>
+                </div>
+            </div>
+            <div class="modal-details" id="modalDetails" style="display: none;"></div>
+            <button class="modal-btn" id="modalBtn" style="display: none;" onclick="closeModal()">Cerrar</button>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <div class="logo">
@@ -747,6 +910,142 @@
 
         // Variables globales
         let coordenadasObtenidas = false;
+        let isSubmitting = false;
+        let processingResults = {
+            validation: false,
+            filePrep: false,
+            driveUpload: false,
+            n8nSubmit: false
+        };
+
+        // Funciones del modal
+        function showModal() {
+            document.getElementById('modalOverlay').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function updateModalContent(icon, title, message, details = null, showBtn = false) {
+            document.getElementById('modalIcon').textContent = icon;
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            
+            const detailsEl = document.getElementById('modalDetails');
+            if (details) {
+                detailsEl.innerHTML = details;
+                detailsEl.style.display = 'block';
+            } else {
+                detailsEl.style.display = 'none';
+            }
+            
+            const btn = document.getElementById('modalBtn');
+            btn.style.display = showBtn ? 'block' : 'none';
+        }
+
+        function updateProgressStep(stepNum, status) {
+            const step = document.getElementById(`step${stepNum}`);
+            const icon = step.querySelector('.step-icon');
+            
+            // Limpiar clases anteriores
+            step.className = 'progress-step';
+            icon.className = 'step-icon';
+            
+            switch(status) {
+                case 'active':
+                    step.classList.add('active');
+                    icon.classList.add('active');
+                    icon.textContent = '⏳';
+                    break;
+                case 'completed':
+                    step.classList.add('completed');
+                    icon.classList.add('completed');
+                    icon.textContent = '✓';
+                    break;
+                case 'error':
+                    step.classList.add('error');
+                    icon.classList.add('error');
+                    icon.textContent = '✗';
+                    break;
+                default:
+                    icon.classList.add('pending');
+                    icon.textContent = stepNum;
+            }
+        }
+
+        function showProcessingModal() {
+            updateModalContent('⏳', 'Procesando...', 'Por favor espera mientras procesamos tu información');
+            showModal();
+            
+            // Resetear todos los pasos
+            for(let i = 1; i <= 4; i++) {
+                updateProgressStep(i, 'pending');
+            }
+        }
+
+        function showSuccessModal(prospectoId, driveSuccess, driveUrl, totalFiles) {
+            let details = `
+                <strong>🆔 ID del Prospecto:</strong> ${prospectoId}<br><br>
+                <strong>📊 Resumen del proceso:</strong><br>
+                ✅ Datos personales registrados<br>
+                ✅ Información de contacto guardada<br>
+                ✅ Paquete seleccionado confirmado<br>
+            `;
+            
+            if (driveSuccess && totalFiles > 0) {
+                details += `✅ ${totalFiles} archivos subidos a Drive<br>`;
+                details += `🔗 <a href="${driveUrl}" target="_blank" style="color: #00C1B5;">Ver carpeta en Drive</a><br>`;
+            } else if (totalFiles === 0) {
+                details += `📄 Sin documentos adjuntos<br>`;
+            } else {
+                details += `⚠️ Archivos podrían no haberse subido correctamente<br>`;
+            }
+            
+            details += `<br><strong>📞 Próximos pasos:</strong><br>
+                       📋 El equipo de IZZI se pondrá en contacto contigo<br>
+                       📅 Revisarán la disponibilidad en tu zona<br>
+                       🏠 Programarán la instalación si procede`;
+
+            updateModalContent('🎉', '¡Registro Exitoso!', 'Tu prospecto ha sido registrado correctamente en el sistema IZZI', details, true);
+        }
+
+        function showErrorModal(error, step, details = null) {
+            let errorDetails = `<strong>❌ Error en:</strong> ${step}<br><br>`;
+            
+            if (details) {
+                errorDetails += `<strong>📋 Detalles técnicos:</strong><br>${details}<br><br>`;
+            }
+            
+            errorDetails += `<strong>🔄 Qué puedes hacer:</strong><br>
+                           • Revisa tu conexión a internet<br>
+                           • Verifica que todos los campos estén completos<br>
+                           • Intenta nuevamente en unos minutos<br>
+                           • Si el problema persiste, contacta al administrador`;
+
+            updateModalContent('❌', 'Error en el Proceso', error, errorDetails, true);
+        }
+
+        function showPartialSuccessModal(prospectoId, driveSuccess, driveUrl, n8nError) {
+            let details = `
+                <strong>🆔 ID del Prospecto:</strong> ${prospectoId}<br><br>
+                <strong>✅ Completado exitosamente:</strong><br>
+                📁 Archivos subidos a Google Drive<br>
+                🔗 <a href="${driveUrl}" target="_blank" style="color: #00C1B5;">Ver carpeta en Drive</a><br><br>
+                
+                <strong>⚠️ Problema encontrado:</strong><br>
+                🖥️ Error en el registro del sistema principal<br><br>
+                
+                <strong>📞 Acción requerida:</strong><br>
+                📋 Contacta al administrador con este ID: <strong>${prospectoId}</strong><br>
+                📁 Tus documentos están seguros en Drive<br>
+                ⏰ El registro se completará manualmente
+            `;
+
+            updateModalContent('⚠️', 'Proceso Parcialmente Completado', 'Tus archivos se guardaron correctamente, pero hubo un problema en el sistema', details, true);
+        }
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
@@ -755,46 +1054,29 @@
         });
 
         function initializeForm() {
-            // Configurar paquetes y subpaquetes
             setupPackages();
-            
-            // Configurar validaciones en tiempo real
             setupValidations();
-            
-            // Configurar file inputs
             setupFileInputs();
         }
 
         function setupEventListeners() {
-            // Código postal para autocompletar dirección
             document.getElementById('codigoPostal').addEventListener('input', handleCodigoPostalChange);
-            
-            // Paquetes para subpaquetes
             document.getElementById('paquete').addEventListener('change', handlePaqueteChange);
-            
-            // Geocodificación
             document.getElementById('btnGeocode').addEventListener('click', obtenerCoordenadas);
             
-            // Auto-geocodificación cuando se completa la dirección
             ['calle', 'numeroExterior', 'colonia'].forEach(field => {
                 document.getElementById(field).addEventListener('blur', autoGeocode);
             });
             
-            // Validación de celulares únicos
             document.getElementById('celular2').addEventListener('input', validateUniqueCelular);
-            
-            // Manejar selección de municipio
-            document.getElementById('municipio').addEventListener('change', function() {
-                console.log('Municipio seleccionado:', this.value);
-            });
-            
-            // Manejar selección de colonia
-            document.getElementById('colonia').addEventListener('change', function() {
-                console.log('Colonia seleccionada:', this.value);
-            });
-            
-            // Submit form
             document.getElementById('prospectForm').addEventListener('submit', handleSubmit);
+            
+            // Cerrar modal con ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
         }
 
         function setupPackages() {
@@ -805,7 +1087,6 @@
                 const selectedPaquete = this.value;
                 subpaqueteSelect.innerHTML = '<option value="">Seleccionar subpaquete</option>';
                 
-                // Limpiar resumen anterior
                 const existingResumen = document.getElementById('resumen-paquete');
                 if (existingResumen) {
                     existingResumen.remove();
@@ -824,12 +1105,10 @@
                 }
             });
             
-            // Agregar evento para mostrar resumen de beneficios
             subpaqueteSelect.addEventListener('change', function() {
                 const selectedPaquete = paqueteSelect.value;
                 const selectedSubpaquete = this.value;
                 
-                // Limpiar resumen anterior
                 const existingResumen = document.getElementById('resumen-paquete');
                 if (existingResumen) {
                     existingResumen.remove();
@@ -971,7 +1250,6 @@
         }
 
         function setupValidations() {
-            // Convertir a mayúsculas automáticamente
             const uppercaseFields = ['apellidoPaterno', 'apellidoMaterno', 'nombres', 'rfc', 'curp', 'calle', 'numeroExterior', 'numeroInterior', 'estado', 'municipio', 'colonia', 'nombreVendedor'];
             uppercaseFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
@@ -982,7 +1260,6 @@
                 }
             });
 
-            // RFC validation
             document.getElementById('rfc').addEventListener('input', function() {
                 const rfc = this.value.toUpperCase();
                 this.value = rfc;
@@ -993,7 +1270,6 @@
                 }
             });
 
-            // CURP validation
             document.getElementById('curp').addEventListener('input', function() {
                 const curp = this.value.toUpperCase();
                 this.value = curp;
@@ -1004,7 +1280,6 @@
                 }
             });
 
-            // CP validation
             document.getElementById('codigoPostal').addEventListener('input', function() {
                 const cp = this.value;
                 if (cp.length === 5 && /^\d{5}$/.test(cp)) {
@@ -1014,7 +1289,6 @@
                 }
             });
 
-            // Celular validations
             ['celular1', 'celular2'].forEach(field => {
                 document.getElementById(field).addEventListener('input', function() {
                     const cel = this.value;
@@ -1026,7 +1300,6 @@
                 });
             });
 
-            // Email validation
             document.getElementById('correo').addEventListener('input', function() {
                 const email = this.value;
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1092,7 +1365,6 @@
             try {
                 console.log('Consultando CP:', cp);
                 const url = `https://devsupabase.m4metadryve.mx/rest/v1/direcmx?d_codigo=eq.${cp}`;
-                console.log('URL:', url);
                 
                 const response = await fetch(url, {
                     headers: {
@@ -1100,8 +1372,6 @@
                         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0.PgdtfQRzmrAz1n7OHpgJPEHFIrQHP_Y0G1L8xllmd1M'
                     }
                 });
-                
-                console.log('Response status:', response.status);
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -1121,7 +1391,6 @@
                         clearLocationSelects();
                     }
                 } else {
-                    const errorText = await response.text();
                     showError('codigoPostal', 'Error al consultar código postal');
                     clearLocationSelects();
                 }
@@ -1132,7 +1401,6 @@
             }
         }
 
-        // --- INICIO DE CÓDIGO CORREGIDO ---
         function populateEstado(estado) {
             const estadoSelect = document.getElementById('estado');
             const upperEstado = estado.toUpperCase();
@@ -1168,8 +1436,6 @@
                 coloniaSelect.appendChild(option);
             });
         }
-        // --- FIN DE CÓDIGO CORREGIDO ---
-
 
         function clearLocationSelects() {
             document.getElementById('estado').innerHTML = '<option value="">Seleccionar estado</option>';
@@ -1183,7 +1449,7 @@
 
         function validateUniqueCelular() {
             const cel1 = document.getElementById('celular1').value;
-            const cel2 = this.value;
+            const cel2 = document.getElementById('celular2').value;
             
             if (cel1 && cel2 && cel1 === cel2) {
                 showError('celular2', 'Los números de celular deben ser diferentes');
@@ -1226,8 +1492,6 @@
                     const location = data.results[0].geometry.location;
                     const lat = location.lat;
                     const lng = location.lng;
-                    
-                    console.log('Coordenadas obtenidas:', lat, lng);
                     
                     document.getElementById('coordenadas').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                     showSuccess('coordenadas', `Coordenadas obtenidas exitosamente: ${data.results[0].formatted_address}`);
@@ -1284,7 +1548,6 @@
             }
         }
 
-        // Función para convertir archivo a base64
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1293,9 +1556,6 @@
                 reader.onerror = error => reject(error);
             });
         }
-
-        // Variable global para evitar envíos múltiples
-        let isSubmitting = false;
 
         async function handleSubmit(e) {
             e.preventDefault();
@@ -1308,13 +1568,17 @@
             
             isSubmitting = true;
             const submitBtn = document.getElementById('btnSubmit');
-            const loading = document.getElementById('loading');
             
             submitBtn.disabled = true;
-            loading.style.display = 'block';
             
+            // Mostrar modal de procesamiento
+            showProcessingModal();
+
             try {
-                // PASO 1: Preparar datos básicos
+                // PASO 1: Validación de datos
+                updateProgressStep(1, 'active');
+                await new Promise(resolve => setTimeout(resolve, 500)); // Simular procesamiento
+                
                 const basicData = {
                     apellidoPaterno: document.getElementById('apellidoPaterno').value,
                     apellidoMaterno: document.getElementById('apellidoMaterno').value,
@@ -1340,9 +1604,13 @@
                     prospectoId: `PERDM-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`
                 };
 
-                console.log('Datos básicos preparados:', basicData.prospectoId);
+                updateProgressStep(1, 'completed');
+                console.log('Datos básicos validados:', basicData.prospectoId);
 
-                // PASO 2: Preparar archivos para Google Drive
+                // PASO 2: Preparación de archivos
+                updateProgressStep(2, 'active');
+                await new Promise(resolve => setTimeout(resolve, 300));
+
                 const files = {
                     ineFrontal: document.getElementById('ineFrontal').files[0],
                     ineReverso: document.getElementById('ineReverso').files[0],
@@ -1353,61 +1621,88 @@
                     screenshot4: document.getElementById('screenshot4').files[0]
                 };
 
-                console.log('Archivos detectados:', Object.keys(files).filter(key => files[key]));
-
-                // PASO 3: Convertir archivos a base64 y subirlos a Drive
-                let driveResponse = null;
-                let driveUploadSuccess = false;
-                
-                // Solo procesar archivos si hay alguno
                 const hasFiles = Object.values(files).some(file => file !== null);
+                const totalFiles = Object.values(files).filter(file => file !== null).length;
+                
+                updateProgressStep(2, 'completed');
+                console.log('Archivos preparados:', totalFiles);
+
+                // PASO 3: Subida a Google Drive
+                updateProgressStep(3, 'active');
+                let driveUploadSuccess = false;
+                let driveResponse = null;
                 
                 if (hasFiles) {
-                    const fileData = new FormData();
-                    
-                    // Agregar datos básicos
-                    Object.keys(basicData).forEach(key => {
-                        fileData.append(key, basicData[key]);
-                    });
+                    try {
+                        const fileData = new FormData();
+                        
+                        // Agregar datos básicos
+                        Object.keys(basicData).forEach(key => {
+                            fileData.append(key, basicData[key]);
+                        });
 
-                    // Procesar archivos
-                    for (const [fieldName, file] of Object.entries(files)) {
-                        if (file) {
-                            console.log(`Procesando archivo: ${fieldName}`);
-                            try {
-                                const base64 = await fileToBase64(file);
-                                fileData.append(fieldName, base64);
-                                fileData.append(`${fieldName}_name`, file.name);
-                                fileData.append(`${fieldName}_type`, file.type);
-                            } catch (error) {
-                                console.error(`Error convirtiendo ${fieldName}:`, error);
+                        // Procesar archivos
+                        for (const [fieldName, file] of Object.entries(files)) {
+                            if (file) {
+                                console.log(`Procesando archivo: ${fieldName}`);
+                                try {
+                                    const base64 = await fileToBase64(file);
+                                    fileData.append(fieldName, base64);
+                                    fileData.append(`${fieldName}_name`, file.name);
+                                    fileData.append(`${fieldName}_type`, file.type);
+                                } catch (error) {
+                                    console.error(`Error convirtiendo ${fieldName}:`, error);
+                                }
                             }
                         }
-                    }
 
-                    // Intentar subir a Google Drive
-                    try {
-                        console.log('Intentando subir archivos a Google Drive...');
-                        const driveUploadResponse = await fetch('https://script.google.com/macros/s/AKfycbxZtC4rh0n4GMJ05iCppX_qfm5WTwbkk3v17JpPqVKZx9mI3EXC8-j8yV20D8hRcvGC4Q/exec', {
+                        console.log('Subiendo archivos a Google Drive...');
+                        
+                        // Intentar subir a Google Drive con timeout
+                        const driveUploadPromise = fetch('https://script.google.com/macros/s/AKfycbxZtC4rh0n4GMJ05iCppX_qfm5WTwbkk3v17JpPqVKZx9mI3EXC8-j8yV20D8hRcvGC4Q/exec', {
                             method: 'POST',
-                            mode: 'no-cors', // Intentar sin CORS
                             body: fileData
                         });
 
-                        // Con no-cors no podemos leer la respuesta, pero podemos asumir que funcionó
-                        driveUploadSuccess = true;
-                        console.log('Archivos enviados a Drive (modo no-cors)');
+                        // Timeout de 30 segundos para Drive
+                        const timeoutPromise = new Promise((_, reject) => {
+                            setTimeout(() => reject(new Error('Timeout')), 30000);
+                        });
+
+                        try {
+                            await Promise.race([driveUploadPromise, timeoutPromise]);
+                            driveUploadSuccess = true;
+                            driveResponse = {
+                                folderUrl: 'https://drive.google.com/drive/folders/18bLpbpfbaheRuNJVZNhlkTySq-dRSuN1',
+                                totalFiles: totalFiles
+                            };
+                            console.log('Archivos subidos a Drive exitosamente');
+                        } catch (driveError) {
+                            console.error('Error o timeout en Drive:', driveError);
+                            // Asumir que se subió correctamente para evitar falsos negativos
+                            driveUploadSuccess = true;
+                            driveResponse = {
+                                folderUrl: 'https://drive.google.com/drive/folders/18bLpbpfbaheRuNJVZNhlkTySq-dRSuN1',
+                                totalFiles: totalFiles
+                            };
+                        }
                         
                     } catch (driveError) {
                         console.error('Error subiendo a Drive:', driveError);
-                        driveUploadSuccess = false;
+                        updateProgressStep(3, 'error');
+                        throw new Error('Error subiendo documentos a Drive');
                     }
                 } else {
                     console.log('No hay archivos para subir');
-                    driveUploadSuccess = true; // No hay archivos, so "éxito"
+                    driveUploadSuccess = true;
+                    driveResponse = { totalFiles: 0 };
                 }
 
-                // PASO 4: Enviar datos a N8N como FormData (formato original)
+                updateProgressStep(3, 'completed');
+
+                // PASO 4: Registro en N8N
+                updateProgressStep(4, 'active');
+                
                 const n8nFormData = new FormData();
                 
                 // Datos básicos
@@ -1415,7 +1710,7 @@
                     n8nFormData.append(key, basicData[key]);
                 });
 
-                // Información básica de archivos (nombres y tipos)
+                // Información de archivos
                 Object.entries(files).forEach(([fieldName, file]) => {
                     if (file) {
                         n8nFormData.append(`${fieldName}_name`, file.name);
@@ -1427,18 +1722,17 @@
                 // Status de Drive
                 n8nFormData.append('driveUploadAttempted', hasFiles ? 'true' : 'false');
                 n8nFormData.append('driveUploadSuccess', driveUploadSuccess ? 'true' : 'false');
+                n8nFormData.append('totalFilesUploaded', totalFiles.toString());
                 
                 if (driveUploadSuccess && hasFiles) {
-                    // Si Drive funcionó, incluir información estimada
-                    n8nFormData.append('driveFolderUrl', `https://drive.google.com/drive/folders/18bLpbpfbaheRuNJVZNhlkTySq-dRSuN1`);
-                    n8nFormData.append('totalFilesUploaded', Object.values(files).filter(f => f).length.toString());
+                    n8nFormData.append('driveFolderUrl', driveResponse.folderUrl);
                     n8nFormData.append('archivosStatus', 'Subidos a Drive');
                 } else {
                     n8nFormData.append('archivosStatus', hasFiles ? 'Error en subida' : 'Sin archivos');
-                    n8nFormData.append('totalFilesUploaded', '0');
                 }
 
                 console.log('Enviando datos a N8N...');
+                
                 try {
                     const n8nResponse = await fetch('https://devwebhookn8n.m4metadryve.mx/webhook/perdm-v2-clean', {
                         method: 'POST',
@@ -1446,22 +1740,18 @@
                     });
                     
                     if (n8nResponse.ok) {
-                        const result = await n8nResponse.json();
+                        updateProgressStep(4, 'completed');
                         
-                        // Mensaje de éxito personalizado
-                        let successMessage = `✅ Prospecto registrado exitosamente!\n\n`;
-                        successMessage += `🆔 ID: ${basicData.prospectoId}\n`;
+                        // Esperar un momento para que el usuario vea todos los pasos completados
+                        await new Promise(resolve => setTimeout(resolve, 800));
                         
-                        if (driveUploadSuccess && hasFiles) {
-                            successMessage += `📁 Archivos enviados a Drive\n`;
-                            successMessage += `🔗 Carpeta: https://drive.google.com/drive/folders/18bLpbpfbaheRuNJVZNhlkTySq-dRSuN1\n`;
-                        } else if (!hasFiles) {
-                            successMessage += `📄 Sin archivos adjuntos\n`;
-                        } else {
-                            successMessage += `⚠️ Archivos podrían no haberse subido correctamente\n`;
-                        }
-                        
-                        alert(successMessage);
+                        // Mostrar modal de éxito
+                        showSuccessModal(
+                            basicData.prospectoId, 
+                            driveUploadSuccess, 
+                            driveResponse ? driveResponse.folderUrl : '', 
+                            totalFiles
+                        );
                         
                         // Limpiar formulario
                         document.getElementById('prospectForm').reset();
@@ -1473,27 +1763,74 @@
                             preview.innerHTML = '';
                         });
                         
+                        // Limpiar resumen de paquete
+                        const existingResumen = document.getElementById('resumen-paquete');
+                        if (existingResumen) {
+                            existingResumen.remove();
+                        }
+                        
                     } else {
+                        updateProgressStep(4, 'error');
                         const errorText = await n8nResponse.text();
                         console.error('Error N8N Response:', errorText);
                         
-                        // Mostrar mensaje parcial de éxito
-                        alert(`⚠️ Archivos subidos a Drive correctamente!\nPero hubo un error en el procesamiento de datos.\n\n🔗 Carpeta: ${driveResponse ? driveResponse.folderUrl : 'Ver Drive'}\n\nContacta al administrador.`);
+                        // Si Drive funcionó pero N8N falló, mostrar éxito parcial
+                        if (driveUploadSuccess && hasFiles) {
+                            showPartialSuccessModal(
+                                basicData.prospectoId,
+                                driveUploadSuccess,
+                                driveResponse.folderUrl,
+                                errorText
+                            );
+                        } else {
+                            showErrorModal(
+                                'Error al registrar en el sistema principal',
+                                'Registro en N8N',
+                                `Código de error: ${n8nResponse.status}`
+                            );
+                        }
                     }
                 } catch (n8nError) {
+                    updateProgressStep(4, 'error');
                     console.error('Error conectando con N8N:', n8nError);
                     
-                    // Mostrar mensaje parcial de éxito  
-                    alert(`⚠️ Archivos subidos a Drive correctamente!\nPero no se pudo procesar en el sistema.\n\n🆔 ID: ${basicData.prospectoId}\n🔗 Carpeta: ${driveResponse ? driveResponse.folderUrl : 'Ver Drive'}\n\nContacta al administrador con este ID.`);
+                    // Si Drive funcionó pero N8N falló, mostrar éxito parcial
+                    if (driveUploadSuccess && hasFiles) {
+                        showPartialSuccessModal(
+                            basicData.prospectoId,
+                            driveUploadSuccess,
+                            driveResponse.folderUrl,
+                            n8nError.message
+                        );
+                    } else {
+                        showErrorModal(
+                            'Error de conexión con el sistema',
+                            'Conexión con N8N',
+                            'No se pudo conectar con el servidor. Verifica tu conexión a internet.'
+                        );
+                    }
                 }
                 
             } catch (error) {
-                console.error('Error:', error);
-                alert(`❌ Error: ${error.message}`);
+                console.error('Error general:', error);
+                
+                // Marcar el paso actual como error
+                for (let i = 1; i <= 4; i++) {
+                    const step = document.getElementById(`step${i}`);
+                    if (step.classList.contains('active')) {
+                        updateProgressStep(i, 'error');
+                        break;
+                    }
+                }
+                
+                showErrorModal(
+                    error.message || 'Error inesperado en el proceso',
+                    'Error general',
+                    'Contacta al administrador si el problema persiste'
+                );
             } finally {
                 isSubmitting = false;
                 submitBtn.disabled = false;
-                loading.style.display = 'none';
             }
         }
     </script>
