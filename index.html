@@ -1398,41 +1398,42 @@
                 }
 
                 // PASO 4: Enviar datos a N8N (siempre, independientemente de Drive)
-                const n8nData = new FormData();
-                
-                // Datos básicos
-                Object.keys(basicData).forEach(key => {
-                    n8nData.append(key, basicData[key]);
-                });
+                const n8nData = {
+                    // Datos básicos
+                    ...basicData,
+                    
+                    // Información básica de archivos (nombres y tipos)
+                    driveUploadAttempted: hasFiles ? 'true' : 'false',
+                    driveUploadSuccess: driveUploadSuccess ? 'true' : 'false'
+                };
 
-                // Información básica de archivos (nombres y tipos)
+                // Agregar información de archivos
                 Object.entries(files).forEach(([fieldName, file]) => {
                     if (file) {
-                        n8nData.append(`${fieldName}_name`, file.name);
-                        n8nData.append(`${fieldName}_size`, file.size);
-                        n8nData.append(`${fieldName}_type`, file.type);
+                        n8nData[`${fieldName}_name`] = file.name;
+                        n8nData[`${fieldName}_size`] = file.size;
+                        n8nData[`${fieldName}_type`] = file.type;
                     }
                 });
-
-                // Status de Drive
-                n8nData.append('driveUploadAttempted', hasFiles ? 'true' : 'false');
-                n8nData.append('driveUploadSuccess', driveUploadSuccess ? 'true' : 'false');
                 
                 if (driveUploadSuccess && hasFiles) {
                     // Si Drive funcionó, incluir información estimada
-                    n8nData.append('driveFolderUrl', `https://drive.google.com/drive/folders/18bLpbpfbaheRuNJVZNhlkTySq-dRSuN1`);
-                    n8nData.append('totalFilesUploaded', Object.values(files).filter(f => f).length.toString());
-                    n8nData.append('archivosStatus', 'Subidos a Drive');
+                    n8nData.driveFolderUrl = `https://drive.google.com/drive/folders/18bLpbpfbaheRuNJVZNhlkTySq-dRSuN1`;
+                    n8nData.totalFilesUploaded = Object.values(files).filter(f => f).length.toString();
+                    n8nData.archivosStatus = 'Subidos a Drive';
                 } else {
-                    n8nData.append('archivosStatus', hasFiles ? 'Error en subida' : 'Sin archivos');
-                    n8nData.append('totalFilesUploaded', '0');
+                    n8nData.archivosStatus = hasFiles ? 'Error en subida' : 'Sin archivos';
+                    n8nData.totalFilesUploaded = '0';
                 }
 
                 console.log('Enviando datos a N8N...');
                 try {
                     const n8nResponse = await fetch('https://devwebhookn8n.m4metadryve.mx/webhook/perdm-v2-clean', {
                         method: 'POST',
-                        body: n8nData
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(n8nData)
                     });
                     
                     if (n8nResponse.ok) {
