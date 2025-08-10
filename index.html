@@ -298,6 +298,107 @@
             color: #00C1B5;
         }
 
+        /* Overlay de procesamiento */
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(43, 43, 40, 0.95);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .processing-content {
+            text-align: center;
+            color: white;
+            max-width: 400px;
+            padding: 40px;
+            background: rgba(0, 193, 181, 0.1);
+            border: 2px solid #00C1B5;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .processing-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #3a3a37;
+            border-top: 4px solid #00C1B5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .processing-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00C1B5;
+            margin-bottom: 15px;
+        }
+
+        .processing-message {
+            font-size: 16px;
+            color: #FFFFFF;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .processing-steps {
+            text-align: left;
+            font-size: 14px;
+            color: #939598;
+        }
+
+        .processing-step {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #00C1B5;
+            color: #2B2B28;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .step-icon.completed {
+            background: #00C1B5;
+        }
+
+        .step-icon.processing {
+            background: #FFA807;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .processing-warning {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 168, 7, 0.2);
+            border-left: 4px solid #FFA807;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #FFA807;
+            font-weight: bold;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -310,6 +411,20 @@
             
             .logo-text {
                 font-size: 28px;
+            }
+
+            .processing-content {
+                max-width: 350px;
+                padding: 30px 20px;
+                margin: 20px;
+            }
+
+            .processing-title {
+                font-size: 20px;
+            }
+
+            .processing-message {
+                font-size: 14px;
             }
         }
     </style>
@@ -606,6 +721,44 @@
         </form>
     </div>
 
+    <!-- Overlay de procesamiento -->
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="processing-content">
+            <div class="processing-spinner"></div>
+            <div class="processing-title">PROCESANDO PROSPECTO</div>
+            <div class="processing-message">
+                Estamos registrando tu prospecto en el sistema PERDM v2...
+            </div>
+            
+            <div class="processing-steps">
+                <div class="processing-step">
+                    <div class="step-icon completed" id="step1">1</div>
+                    <span>Validando datos del formulario</span>
+                </div>
+                <div class="processing-step">
+                    <div class="step-icon processing" id="step2">2</div>
+                    <span>Subiendo archivos a Google Drive</span>
+                </div>
+                <div class="processing-step">
+                    <div class="step-icon" id="step3">3</div>
+                    <span>Guardando en base de datos</span>
+                </div>
+                <div class="processing-step">
+                    <div class="step-icon" id="step4">4</div>
+                    <span>Notificando a mesa de control</span>
+                </div>
+                <div class="processing-step">
+                    <div class="step-icon" id="step5">5</div>
+                    <span>Enviando confirmación al supervisor</span>
+                </div>
+            </div>
+            
+            <div class="processing-warning">
+                ⚠️ NO CIERRES ESTA VENTANA NI TOQUES NADA HASTA QUE EL PROCESO TERMINE
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuración de subpaquetes con datos completos
         const subpaquetes = {
@@ -747,6 +900,59 @@
 
         // Variables globales
         let coordenadasObtenidas = false;
+
+        // Funciones para overlay de procesamiento
+        function showProcessingOverlay() {
+            const overlay = document.getElementById('processingOverlay');
+            overlay.style.display = 'flex';
+            
+            // Deshabilitar scroll del body
+            document.body.style.overflow = 'hidden';
+            
+            // Simular progreso de pasos
+            setTimeout(() => updateProcessingStep(2), 1000);
+            setTimeout(() => updateProcessingStep(3), 3000);
+            setTimeout(() => updateProcessingStep(4), 5000);
+            setTimeout(() => updateProcessingStep(5), 7000);
+        }
+
+        function hideProcessingOverlay() {
+            const overlay = document.getElementById('processingOverlay');
+            overlay.style.display = 'none';
+            
+            // Rehabilitar scroll del body
+            document.body.style.overflow = 'auto';
+            
+            // Reset steps
+            resetProcessingSteps();
+        }
+
+        function updateProcessingStep(stepNumber) {
+            // Marcar paso anterior como completado
+            const prevStep = document.getElementById(`step${stepNumber - 1}`);
+            if (prevStep) {
+                prevStep.className = 'step-icon completed';
+            }
+            
+            // Marcar paso actual como procesando
+            const currentStep = document.getElementById(`step${stepNumber}`);
+            if (currentStep) {
+                currentStep.className = 'step-icon processing';
+            }
+        }
+
+        function resetProcessingSteps() {
+            for (let i = 1; i <= 5; i++) {
+                const step = document.getElementById(`step${i}`);
+                if (step) {
+                    if (i === 1) {
+                        step.className = 'step-icon completed';
+                    } else {
+                        step.className = 'step-icon';
+                    }
+                }
+            }
+        }
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
@@ -1304,11 +1510,15 @@
             }
             
             isSubmitting = true;
+            
+            // MOSTRAR OVERLAY DE PROCESAMIENTO
+            showProcessingOverlay();
+            
             const submitBtn = document.getElementById('btnSubmit');
             const loading = document.getElementById('loading');
             
             submitBtn.disabled = true;
-            loading.style.display = 'block';
+            // NO mostrar el loading original, usar overlay
             
             try {
                 // PASO 1: Preparar datos básicos
@@ -1468,9 +1678,96 @@
                     if (n8nResponse.ok) {
                         const result = await n8nResponse.json();
                         
-                        // Mensaje de éxito completo
+                        // Mensaje de éxito completo y correcto
                         let successMessage = `✅ PROSPECTO REGISTRADO EXITOSAMENTE!\n\n`;
                         successMessage += `🆔 ID: ${basicData.prospectoId}\n`;
+                        
+                        if (driveUploadSuccess && driveResponse) {
+                            successMessage += `📁 Archivos subidos: ${driveResponse.totalFilesUploaded}\n`;
+                            successMessage += `🔗 Carpeta: ${driveResponse.driveFolderUrl}\n`;
+                            successMessage += `📋 Mesa de control notificada\n`;
+                            successMessage += `📱 Supervisor notificado\n`;
+                            successMessage += `📊 Datos guardados en sistema\n`;
+                        } else if (!hasFiles) {
+                            successMessage += `📄 Sin archivos adjuntos\n`;
+                            successMessage += `📋 Mesa de control notificada\n`;
+                            successMessage += `📱 Supervisor notificado\n`;
+                            successMessage += `📊 Datos guardados en sistema\n`;
+                        } else {
+                            successMessage += `⚠️ Archivos con problemas, pero datos guardados\n`;
+                            successMessage += `📋 Mesa de control notificada\n`;
+                            successMessage += `📱 Supervisor notificado\n`;
+                        }
+                        
+                        successMessage += `\n🎉 PERDM v2 - PROCESO COMPLETADO EXITOSAMENTE`;
+                        
+                        alert(successMessage);
+                        
+                        // Limpiar formulario
+                        document.getElementById('prospectForm').reset();
+                        coordenadasObtenidas = false;
+                        
+                        // Limpiar previews
+                        document.querySelectorAll('.preview-container').forEach(preview => {
+                            preview.style.display = 'none';
+                            preview.innerHTML = '';
+                        });
+                        
+                        // Resetear labels de archivos
+                        document.querySelectorAll('.file-label span').forEach(span => {
+                            const originalText = span.textContent;
+                            if (originalText.includes('captura')) {
+                                // Mantener el texto original de screenshots
+                                span.textContent = originalText;
+                            } else {
+                                span.textContent = 'Seleccionar archivo';
+                            }
+                        });
+                        
+                    } else {
+                        // Solo mostrar error si realmente hay un error HTTP
+                        const errorText = await n8nResponse.text();
+                        console.error('Error N8N Response:', errorText);
+                        
+                        let errorMessage = `❌ ERROR EN EL PROCESAMIENTO\n\n`;
+                        if (driveUploadSuccess && driveResponse) {
+                            errorMessage += `✅ Archivos subidos correctamente\n`;
+                            errorMessage += `🔗 ${driveResponse.driveFolderUrl}\n`;
+                            errorMessage += `❌ Error en el sistema de notificaciones\n\n`;
+                        } else {
+                            errorMessage += `❌ Error completo en el proceso\n\n`;
+                        }
+                        errorMessage += `🆔 ID: ${basicData.prospectoId}\n`;
+                        errorMessage += `📞 Contacta al administrador`;
+                        
+                        alert(errorMessage);
+                    }
+                } catch (n8nError) {
+                    console.error('Error conectando con N8N:', n8nError);
+                    
+                    let partialMessage = `⚠️ ARCHIVOS SUBIDOS, ERROR EN SISTEMA\n\n`;
+                    if (driveUploadSuccess && driveResponse) {
+                        partialMessage += `✅ Archivos guardados en Drive\n`;
+                        partialMessage += `🔗 ${driveResponse.driveFolderUrl}\n`;
+                    }
+                    partialMessage += `❌ No se pudo procesar en el sistema\n\n`;
+                    partialMessage += `🆔 ID: ${basicData.prospectoId}\n`;
+                    partialMessage += `📞 Reporta este error al administrador`;
+                    
+                    alert(partialMessage);
+                }
+                
+            } catch (error) {
+                console.error('Error general:', error);
+                alert(`❌ Error inesperado: ${error.message}\n\nIntenta nuevamente o contacta al administrador.`);
+            } finally {
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                
+                // OCULTAR OVERLAY DE PROCESAMIENTO
+                hideProcessingOverlay();
+            }
+        }: ${basicData.prospectoId}\n`;
                         
                         if (driveUploadSuccess && driveResponse) {
                             successMessage += `📁 Archivos subidos a Drive: ${driveResponse.totalFilesUploaded}\n`;
